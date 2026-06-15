@@ -190,8 +190,48 @@ const getLoanById = async (req, res, next) => {
   }
 };
 
+const getLoanInstallments = async (req, res, next) => {
+  try {
+    const { loanId } = req.params;
+    if (!loanId || !mongoose.Types.ObjectId.isValid(loanId)) {
+      return res.status(400).json({ message: "Valid loan id is required" });
+    }
+
+    const loan = await Loan.findById(loanId);
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found" });
+    }
+
+    const installments = await EMI.find({ loanId }).sort({ emiNumber: 1 });
+
+    const totalInstallments = installments.length;
+    const paidInstallments = installments.filter(i => i.status === "Paid").length;
+    const pendingInstallments = installments.filter(i => i.status === "Pending").length;
+    const overdueInstallments = installments.filter(i => i.status === "Overdue").length;
+
+    const collectionProgress = totalInstallments > 0 ? (paidInstallments / totalInstallments) * 100 : 0;
+    const outstandingAmount = installments
+      .filter(i => i.status === "Pending" || i.status === "Overdue")
+      .reduce((sum, i) => sum + i.amount, 0);
+
+    res.status(200).json({
+      loanId,
+      totalInstallments,
+      paidInstallments,
+      pendingInstallments,
+      overdueInstallments,
+      collectionProgress,
+      outstandingAmount,
+      installments
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createLoan,
   getLoans,
   getLoanById,
+  getLoanInstallments,
 };

@@ -16,6 +16,52 @@ const getEmiSchedule = async (req, res, next) => {
   }
 };
 
+const payEmi = async (req, res, next) => {
+  try {
+    const { installmentId } = req.params;
+    const { paymentMode } = req.body;
+
+    if (!installmentId || !mongoose.Types.ObjectId.isValid(installmentId)) {
+      return res.status(400).json({ message: "Valid installmentId is required" });
+    }
+
+    const validModes = ["Cash", "UPI", "Bank Transfer"];
+    let modeToSave = "Cash"; // default or as per request
+    if (paymentMode && validModes.includes(paymentMode)) {
+      modeToSave = paymentMode;
+    } else if (paymentMode) {
+      return res.status(400).json({ message: "Invalid payment mode. Must be Cash, UPI, or Bank Transfer" });
+    }
+
+    const installment = await EMI.findById(installmentId);
+
+    if (!installment) {
+      return res.status(404).json({ message: "Installment not found" });
+    }
+
+    if (installment.status === "Paid") {
+      return res.status(400).json({ message: "Installment already paid" });
+    }
+
+    installment.status = "Paid";
+    installment.paidOn = new Date();
+    installment.collectedBy = req.user.id;
+    if (paymentMode) {
+        installment.paymentMode = modeToSave;
+    }
+
+    await installment.save();
+
+    res.status(200).json({
+      message: "Installment marked as paid",
+      installment
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEmiSchedule,
+  payEmi,
 };

@@ -31,6 +31,10 @@ const emiSchema = new mongoose.Schema(
       enum: ["Pending", "Paid", "Overdue"],
       default: "Pending",
     },
+    paymentMode: {
+      type: String,
+      enum: ["Cash", "UPI", "Bank Transfer"],
+    },
     paidOn: {
       type: Date,
       default: null,
