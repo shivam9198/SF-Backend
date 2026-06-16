@@ -20,6 +20,7 @@ app.use("/api/customers", require("./routes/customerRoutes"));
 app.use("/api/loans", require("./routes/loanRoutes"));
 app.use("/api/emis", require("./routes/emiRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/staff", require("./routes/staffRoutes"));
 
 // Error handling middleware
 app.use(errorHandler);
