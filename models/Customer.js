@@ -23,6 +23,12 @@ const customerSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    customerCode: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+    },
     alternatePhone: {
       type: String,
       trim: true,
@@ -44,7 +50,7 @@ const customerSchema = new mongoose.Schema(
     },
     kycDocumentType: {
       type: String,
-      enum: ["Aadhaar", "Voter ID", "DL"],
+      enum: ["Aadhaar", "Voter ID", "DL", "PAN"],
       default: "Aadhaar",
     },
     kycDocumentImage: {

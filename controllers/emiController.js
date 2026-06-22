@@ -9,7 +9,10 @@ const getEmiSchedule = async (req, res, next) => {
       return res.status(400).json({ message: "Valid loanId is required" });
     }
 
-    const emis = await EMI.find({ loanId }).sort({ emiNumber: 1 });
+    const emis = await EMI.find({ loanId })
+      .populate("customerId", "fullName phone customerCode")
+      .populate("collectedBy", "name role")
+      .sort({ emiNumber: 1 });
     res.status(200).json({ loanId, schedule: emis });
   } catch (error) {
     next(error);
@@ -51,6 +54,8 @@ const payEmi = async (req, res, next) => {
     }
 
     await installment.save();
+    await installment.populate("customerId", "fullName phone customerCode");
+    await installment.populate("collectedBy", "name role");
 
     res.status(200).json({
       message: "Installment marked as paid",

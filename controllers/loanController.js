@@ -160,7 +160,7 @@ const getLoans = async (req, res, next) => {
     }
 
     const loans = await Loan.find(filter)
-      .populate("customerId", "fullName phone")
+      .populate("customerId", "fullName phone customerCode")
       .sort({ createdAt: -1 });
 
     res.status(200).json(loans);
@@ -178,7 +178,7 @@ const getLoanById = async (req, res, next) => {
 
     const loan = await Loan.findById(id).populate(
       "customerId",
-      "fullName phone",
+      "fullName phone customerCode",
     );
     if (!loan) {
       return res.status(404).json({ message: "Loan not found" });
@@ -202,7 +202,10 @@ const getLoanInstallments = async (req, res, next) => {
       return res.status(404).json({ message: "Loan not found" });
     }
 
-    const installments = await EMI.find({ loanId }).sort({ emiNumber: 1 });
+    const installments = await EMI.find({ loanId })
+      .populate("customerId", "fullName phone customerCode")
+      .populate("collectedBy", "name role")
+      .sort({ emiNumber: 1 });
 
     const totalInstallments = installments.length;
     const paidInstallments = installments.filter(i => i.status === "Paid").length;
